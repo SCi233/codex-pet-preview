@@ -1,4 +1,12 @@
-import { Box, Github, Keyboard, Sparkles, UploadCloud, X } from 'lucide-react'
+import {
+  Box,
+  Github,
+  Keyboard,
+  Languages,
+  Sparkles,
+  UploadCloud,
+  X,
+} from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimationRail } from './components/AnimationRail'
 import { InspectorPanel } from './components/InspectorPanel'
@@ -6,6 +14,7 @@ import { PackageLoader } from './components/PackageLoader'
 import { SpriteStage } from './components/SpriteStage'
 import { ANIMATIONS } from './data/animations'
 import { useAnimationPlayer } from './hooks/useAnimationPlayer'
+import { useI18n } from './i18nContext'
 import { validatePet } from './lib/atlasValidation'
 import { filesFromDataTransfer, loadPetPackage } from './lib/petPackage'
 import type {
@@ -20,11 +29,11 @@ const INITIAL_POINTER: PointerLook = {
   y: 0,
   angle: null,
   directionIndex: null,
-  directionLabel: 'Neutral · Idle',
   radius: 0,
 }
 
 function App() {
+  const { locale, setLocale, t } = useI18n()
   const [pet, setPet] = useState<LoadedPet | null>(null)
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [validating, setValidating] = useState(false)
@@ -67,7 +76,7 @@ function App() {
       setLoading(true)
       setError(null)
       try {
-        const nextPet = await loadPetPackage(files, kind)
+        const nextPet = await loadPetPackage(files, kind, locale)
         if (currentUrlRef.current) URL.revokeObjectURL(currentUrlRef.current)
         currentUrlRef.current = nextPet.spriteUrl
         setPet(nextPet)
@@ -78,18 +87,38 @@ function App() {
         setPointer(INITIAL_POINTER)
         setInspectorTab('package')
         setValidation(null)
-        setValidating(true)
-        const result = await validatePet(nextPet)
-        setValidation(result)
       } catch (reason) {
-        setError(reason instanceof Error ? reason.message : '无法打开这个 Pet 包。')
+        setError(
+          reason instanceof Error ? reason.message : t('app.unknownLoadError'),
+        )
       } finally {
         setLoading(false)
-        setValidating(false)
       }
     },
-    [setFrame, setPlaying],
+    [locale, setFrame, setPlaying, t],
   )
+
+  useEffect(() => {
+    if (!pet) {
+      setValidation(null)
+      setValidating(false)
+      return
+    }
+
+    let cancelled = false
+    setValidating(true)
+    void validatePet(pet, locale)
+      .then((result) => {
+        if (!cancelled) setValidation(result)
+      })
+      .finally(() => {
+        if (!cancelled) setValidating(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [locale, pet])
 
   useEffect(
     () => () => {
@@ -187,7 +216,7 @@ function App() {
         type="file"
         multiple
         accept=".zip,.json,.png,.webp,application/zip,application/json,image/png,image/webp"
-        aria-label="快速选择 Pet 包"
+        aria-label={t('app.quickPackage')}
         onChange={(event) => {
           const files = Array.from(event.target.files ?? [])
           if (files.length) void openPet(files)
@@ -208,7 +237,7 @@ function App() {
         </div>
         <div className="header-center">
           <span className="privacy-dot" />
-          Local-first · No upload
+          {t('app.privacy')}
         </div>
         <div className="header-actions">
           <button
@@ -217,7 +246,24 @@ function App() {
             onClick={() => setShowShortcuts(!showShortcuts)}
             aria-expanded={showShortcuts}
           >
-            <Keyboard /> Shortcuts
+            <Keyboard /> <span>{t('app.shortcuts')}</span>
+          </button>
+          <button
+            type="button"
+            className="header-button language-toggle"
+            onClick={() => setLocale(locale === 'zh' ? 'en' : 'zh')}
+            aria-label={
+              locale === 'zh'
+                ? t('app.switchToEnglish')
+                : t('app.switchToChinese')
+            }
+            title={
+              locale === 'zh'
+                ? t('app.switchToEnglish')
+                : t('app.switchToChinese')
+            }
+          >
+            <Languages /> <span>{locale === 'zh' ? 'EN' : '中文'}</span>
           </button>
           <a
             className="header-button"
@@ -234,17 +280,21 @@ function App() {
       {showShortcuts && (
         <div className="shortcut-popover">
           <div className="popover-heading">
-            <strong>Keyboard shortcuts</strong>
-            <button type="button" onClick={() => setShowShortcuts(false)} aria-label="关闭">
+            <strong>{t('app.shortcutHeading')}</strong>
+            <button
+              type="button"
+              onClick={() => setShowShortcuts(false)}
+              aria-label={t('app.close')}
+            >
               <X />
             </button>
           </div>
           <dl>
-            <div><dt><kbd>1–9</kbd></dt><dd>切换动画</dd></div>
-            <div><dt><kbd>Space</kbd></dt><dd>播放 / 暂停</dd></div>
-            <div><dt><kbd>← →</kbd></dt><dd>逐帧查看</dd></div>
-            <div><dt><kbd>L</kbd></dt><dd>Look 调试</dd></div>
-            <div><dt><kbd>G</kbd></dt><dd>辅助线</dd></div>
+            <div><dt><kbd>1–9</kbd></dt><dd>{t('app.shortcutAnimations')}</dd></div>
+            <div><dt><kbd>Space</kbd></dt><dd>{t('app.shortcutPlay')}</dd></div>
+            <div><dt><kbd>← →</kbd></dt><dd>{t('app.shortcutFrames')}</dd></div>
+            <div><dt><kbd>L</kbd></dt><dd>{t('app.shortcutLook')}</dd></div>
+            <div><dt><kbd>G</kbd></dt><dd>{t('app.shortcutGuides')}</dd></div>
           </dl>
         </div>
       )}
@@ -309,7 +359,7 @@ function App() {
         <div className="drop-overlay">
           <div>
             <UploadCloud />
-            <strong>松手载入 Pet</strong>
+            <strong>{t('app.dropTitle')}</strong>
             <span>Folder · ZIP · pet.json · PNG / WebP</span>
           </div>
         </div>
@@ -319,10 +369,14 @@ function App() {
         <div className="error-toast" role="alert">
           <CircleErrorIcon />
           <span>
-            <strong>载入失败</strong>
+            <strong>{t('app.loadFailed')}</strong>
             <small>{error}</small>
           </span>
-          <button type="button" onClick={() => setError(null)} aria-label="关闭错误">
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            aria-label={t('app.closeError')}
+          >
             <X />
           </button>
         </div>

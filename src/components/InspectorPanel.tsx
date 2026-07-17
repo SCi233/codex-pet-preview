@@ -6,6 +6,7 @@ import {
   Image,
   PackageCheck,
 } from 'lucide-react'
+import { useI18n } from '../i18nContext'
 import type { LoadedPet, ValidationResult } from '../types/pet'
 import { AtlasInspector } from './AtlasInspector'
 
@@ -34,9 +35,11 @@ export function InspectorPanel({
   onTab,
   onToggleAtlasGrid,
 }: InspectorPanelProps) {
+  const { t } = useI18n()
+
   return (
     <aside className="inspector-panel">
-      <div className="inspector-tabs" role="tablist" aria-label="检查器">
+      <div className="inspector-tabs" role="tablist" aria-label={t('inspector.aria')}>
         <button
           type="button"
           role="tab"
@@ -44,7 +47,7 @@ export function InspectorPanel({
           className={tab === 'package' ? 'is-active' : ''}
           onClick={() => onTab('package')}
         >
-          Package
+          {t('inspector.package')}
         </button>
         <button
           type="button"
@@ -54,7 +57,7 @@ export function InspectorPanel({
           onClick={() => onTab('atlas')}
           disabled={!pet}
         >
-          Atlas
+          {t('inspector.atlas')}
         </button>
       </div>
 
@@ -69,8 +72,8 @@ export function InspectorPanel({
           {!pet ? (
             <div className="inspector-empty">
               <PackageCheck />
-              <h3>等待载入</h3>
-              <p>选择一个 Codex Pet 包后，这里会显示 manifest 与图集结构检查。</p>
+              <h3>{t('inspector.waiting')}</h3>
+              <p>{t('inspector.waitingDescription')}</p>
             </div>
           ) : (
             <>
@@ -79,7 +82,7 @@ export function InspectorPanel({
                   {pet.manifest.displayName.slice(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <span className="eyebrow">CURRENT PET</span>
+                  <span className="eyebrow">{t('inspector.currentPet')}</span>
                   <h2>{pet.manifest.displayName}</h2>
                   <code>{pet.manifest.id}</code>
                 </div>
@@ -93,14 +96,16 @@ export function InspectorPanel({
                 <div>
                   <FileJson />
                   <span>
-                    <small>MANIFEST</small>
-                    <strong>{pet.manifestSource}</strong>
+                    <small>{t('inspector.manifest')}</small>
+                    <strong>
+                      {pet.manifestSource ?? t('package.autoInferred')}
+                    </strong>
                   </span>
                 </div>
                 <div>
                   <Image />
                   <span>
-                    <small>SPRITESHEET</small>
+                    <small>{t('inspector.spritesheet')}</small>
                     <strong>{pet.spriteSource}</strong>
                   </span>
                 </div>
@@ -109,18 +114,22 @@ export function InspectorPanel({
               <section className="validation-section">
                 <div className="validation-heading">
                   <div>
-                    <span className="eyebrow">PACKAGE CHECK</span>
-                    <h3>结构诊断</h3>
+                    <span className="eyebrow">{t('inspector.packageCheck')}</span>
+                    <h3>{t('inspector.diagnostics')}</h3>
                   </div>
                   {validating ? (
-                    <span className="status-chip is-loading">Scanning</span>
+                    <span className="status-chip is-loading">
+                      {t('inspector.scanning')}
+                    </span>
                   ) : validation ? (
                     <span
                       className={`status-chip ${
                         validation.isValid ? 'is-valid' : 'is-invalid'
                       }`}
                     >
-                      {validation.isValid ? 'Ready' : 'Issues'}
+                      {validation.isValid
+                        ? t('inspector.ready')
+                        : t('inspector.issues')}
                     </span>
                   ) : null}
                 </div>

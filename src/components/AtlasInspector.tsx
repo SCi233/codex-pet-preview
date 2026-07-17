@@ -1,4 +1,5 @@
 import { Grid3X3, Image as ImageIcon } from 'lucide-react'
+import { useI18n } from '../i18nContext'
 import type { LoadedPet } from '../types/pet'
 
 type AtlasInspectorProps = {
@@ -12,11 +13,13 @@ export function AtlasInspector({
   showGrid,
   onToggleGrid,
 }: AtlasInspectorProps) {
+  const { t } = useI18n()
+
   return (
     <div className="atlas-inspector">
       <div className="atlas-toolbar">
         <div>
-          <span className="eyebrow">SPRITESHEET</span>
+          <span className="eyebrow">{t('atlas.spritesheet')}</span>
           <strong>
             {pet.width} × {pet.height}
           </strong>
@@ -27,12 +30,15 @@ export function AtlasInspector({
           onClick={onToggleGrid}
           aria-pressed={showGrid}
         >
-          <Grid3X3 /> Cell grid
+          <Grid3X3 /> {t('atlas.cellGrid')}
         </button>
       </div>
       <div className="atlas-scroll">
         <div className="atlas-image-wrap">
-          <img src={pet.spriteUrl} alt={`${pet.manifest.displayName} spritesheet`} />
+          <img
+            src={pet.spriteUrl}
+            alt={t('atlas.alt', { name: pet.manifest.displayName })}
+          />
           {showGrid && (
             <div
               className="atlas-grid"
@@ -44,7 +50,7 @@ export function AtlasInspector({
         </div>
       </div>
       <div className="atlas-caption">
-        <ImageIcon /> 每格 192 × 208 · {pet.rows} rows · 8 columns
+        <ImageIcon /> {t('atlas.caption', { rows: pet.rows })}
       </div>
     </div>
   )

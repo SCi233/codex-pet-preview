@@ -1,5 +1,6 @@
 import { FileArchive, FolderOpen, RefreshCw, Upload } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { useI18n } from '../i18nContext'
 import type { LoadedPet } from '../types/pet'
 
 type PackageLoaderProps = {
@@ -9,6 +10,7 @@ type PackageLoaderProps = {
 }
 
 export function PackageLoader({ pet, loading, onFiles }: PackageLoaderProps) {
+  const { t } = useI18n()
   const filesRef = useRef<HTMLInputElement>(null)
   const folderRef = useRef<HTMLInputElement>(null)
 
@@ -27,13 +29,10 @@ export function PackageLoader({ pet, loading, onFiles }: PackageLoaderProps) {
   }
 
   return (
-    <section className="package-loader" aria-label="加载 Pet 包">
-      <div className="section-kicker">LOCAL PACKAGE</div>
-      <h2>{pet ? '更换 Pet' : '载入 Pet 包'}</h2>
-      <p>
-        支持文件夹、<code>.zip</code>、<code>pet.json</code> + 图集，或单张
-        PNG / WebP atlas。
-      </p>
+    <section className="package-loader" aria-label={t('loader.aria')}>
+      <div className="section-kicker">{t('loader.kicker')}</div>
+      <h2>{pet ? t('loader.replace') : t('loader.load')}</h2>
+      <p>{t('loader.description')}</p>
 
       <input
         ref={filesRef}
@@ -41,7 +40,7 @@ export function PackageLoader({ pet, loading, onFiles }: PackageLoaderProps) {
         type="file"
         multiple
         accept=".zip,.json,.png,.webp,application/zip,application/json,image/png,image/webp"
-        aria-label="选择 Pet 包文件"
+        aria-label={t('loader.chooseFiles')}
         onChange={(event) => handleInput(event, 'files')}
       />
       <input
@@ -49,7 +48,7 @@ export function PackageLoader({ pet, loading, onFiles }: PackageLoaderProps) {
         className="sr-only"
         type="file"
         multiple
-        aria-label="选择 Pet 包文件夹"
+        aria-label={t('loader.chooseFolder')}
         onChange={(event) => handleInput(event, 'folder')}
       />
 
@@ -61,13 +60,13 @@ export function PackageLoader({ pet, loading, onFiles }: PackageLoaderProps) {
           disabled={loading}
         >
           {loading ? <RefreshCw className="spin" /> : <FileArchive />}
-          {loading ? '读取中…' : '选择包'}
+          {loading ? t('loader.reading') : t('loader.choose')}
         </button>
         <button
           className="button secondary icon-button"
           type="button"
-          aria-label="选择 Pet 包文件夹"
-          title="选择文件夹"
+          aria-label={t('loader.chooseFolder')}
+          title={t('loader.folderTitle')}
           onClick={() => folderRef.current?.click()}
           disabled={loading}
         >
@@ -77,7 +76,7 @@ export function PackageLoader({ pet, loading, onFiles }: PackageLoaderProps) {
 
       <div className="drop-hint">
         <Upload />
-        <span>也可以把 pet 文件夹或 zip 拖到窗口中</span>
+        <span>{t('loader.dropHint')}</span>
       </div>
     </section>
   )

@@ -1,5 +1,7 @@
 # Codex Pet Preview
 
+[English](README.en.md) | 简体中文
+
 一个 local-first 的 Codex Pet 包预览器。它完全运行在浏览器中，不上传文件，也不需要后端。
 
 ## 功能
@@ -12,6 +14,7 @@
 - Atlas 全图和 192×208 cell 网格检查
 - 浏览器内结构诊断：尺寸、版本声明、必需 cell、未使用 cell 透明度
 - 深色、浅色、棋盘格和 chroma 背景，附带中心线与基线辅助线
+- 完整界面支持英文与简体中文切换
 
 ## 启动
 

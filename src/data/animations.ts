@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { Locale } from '../i18n'
 
 export const CELL_WIDTH = 192
 export const CELL_HEIGHT = 208
@@ -17,8 +18,8 @@ export const ATLAS_COLUMNS = 8
 
 export type AnimationDefinition = {
   id: string
-  label: string
-  shortLabel: string
+  label: Record<Locale, string>
+  shortLabel: Record<Locale, string>
   row: number
   frames: number
   durations: number[]
@@ -34,8 +35,8 @@ const repeat = (duration: number, count: number, final?: number) =>
 export const ANIMATIONS: AnimationDefinition[] = [
   {
     id: 'idle',
-    label: 'Idle · 待机',
-    shortLabel: '待机',
+    label: { en: 'Idle', zh: '待机' },
+    shortLabel: { en: 'Idle', zh: '待机' },
     row: 0,
     frames: 6,
     durations: [280, 110, 110, 140, 140, 320],
@@ -44,8 +45,8 @@ export const ANIMATIONS: AnimationDefinition[] = [
   },
   {
     id: 'running-right',
-    label: 'Running right · 向右移动',
-    shortLabel: '向右',
+    label: { en: 'Running right', zh: '向右移动' },
+    shortLabel: { en: 'Right', zh: '向右' },
     row: 1,
     frames: 8,
     durations: repeat(120, 8, 220),
@@ -54,8 +55,8 @@ export const ANIMATIONS: AnimationDefinition[] = [
   },
   {
     id: 'running-left',
-    label: 'Running left · 向左移动',
-    shortLabel: '向左',
+    label: { en: 'Running left', zh: '向左移动' },
+    shortLabel: { en: 'Left', zh: '向左' },
     row: 2,
     frames: 8,
     durations: repeat(120, 8, 220),
@@ -64,8 +65,8 @@ export const ANIMATIONS: AnimationDefinition[] = [
   },
   {
     id: 'waving',
-    label: 'Waving · 挥手',
-    shortLabel: '挥手',
+    label: { en: 'Waving', zh: '挥手' },
+    shortLabel: { en: 'Wave', zh: '挥手' },
     row: 3,
     frames: 4,
     durations: repeat(140, 4, 280),
@@ -74,8 +75,8 @@ export const ANIMATIONS: AnimationDefinition[] = [
   },
   {
     id: 'jumping',
-    label: 'Jumping · 跳跃',
-    shortLabel: '跳跃',
+    label: { en: 'Jumping', zh: '跳跃' },
+    shortLabel: { en: 'Jump', zh: '跳跃' },
     row: 4,
     frames: 5,
     durations: repeat(140, 5, 280),
@@ -84,8 +85,8 @@ export const ANIMATIONS: AnimationDefinition[] = [
   },
   {
     id: 'failed',
-    label: 'Failed · 失败',
-    shortLabel: '失败',
+    label: { en: 'Failed', zh: '失败' },
+    shortLabel: { en: 'Failed', zh: '失败' },
     row: 5,
     frames: 8,
     durations: repeat(140, 8, 240),
@@ -94,8 +95,8 @@ export const ANIMATIONS: AnimationDefinition[] = [
   },
   {
     id: 'waiting',
-    label: 'Waiting · 等待输入',
-    shortLabel: '等待',
+    label: { en: 'Waiting', zh: '等待输入' },
+    shortLabel: { en: 'Waiting', zh: '等待' },
     row: 6,
     frames: 6,
     durations: repeat(150, 6, 260),
@@ -104,8 +105,8 @@ export const ANIMATIONS: AnimationDefinition[] = [
   },
   {
     id: 'running',
-    label: 'Running · 工作中',
-    shortLabel: '工作',
+    label: { en: 'Running', zh: '工作中' },
+    shortLabel: { en: 'Running', zh: '工作' },
     row: 7,
     frames: 6,
     durations: repeat(120, 6, 220),
@@ -114,8 +115,8 @@ export const ANIMATIONS: AnimationDefinition[] = [
   },
   {
     id: 'review',
-    label: 'Review · 审阅',
-    shortLabel: '审阅',
+    label: { en: 'Review', zh: '审阅' },
+    shortLabel: { en: 'Review', zh: '审阅' },
     row: 8,
     frames: 6,
     durations: repeat(150, 6, 280),
@@ -127,22 +128,22 @@ export const ANIMATIONS: AnimationDefinition[] = [
 export const USED_COLUMNS_BY_ROW = [6, 8, 8, 4, 5, 8, 6, 6, 6, 8, 8]
 
 export const LOOK_DIRECTIONS = [
-  '000 · 上',
-  '022.5 · 右上',
-  '045 · 右上',
-  '067.5 · 右上',
-  '090 · 右',
-  '112.5 · 右下',
-  '135 · 右下',
-  '157.5 · 右下',
-  '180 · 下',
-  '202.5 · 左下',
-  '225 · 左下',
-  '247.5 · 左下',
-  '270 · 左',
-  '292.5 · 左上',
-  '315 · 左上',
-  '337.5 · 左上',
+  { en: '000 · Up', zh: '000 · 上' },
+  { en: '022.5 · Upper right', zh: '022.5 · 右上' },
+  { en: '045 · Upper right', zh: '045 · 右上' },
+  { en: '067.5 · Upper right', zh: '067.5 · 右上' },
+  { en: '090 · Right', zh: '090 · 右' },
+  { en: '112.5 · Lower right', zh: '112.5 · 右下' },
+  { en: '135 · Lower right', zh: '135 · 右下' },
+  { en: '157.5 · Lower right', zh: '157.5 · 右下' },
+  { en: '180 · Down', zh: '180 · 下' },
+  { en: '202.5 · Lower left', zh: '202.5 · 左下' },
+  { en: '225 · Lower left', zh: '225 · 左下' },
+  { en: '247.5 · Lower left', zh: '247.5 · 左下' },
+  { en: '270 · Left', zh: '270 · 左' },
+  { en: '292.5 · Upper left', zh: '292.5 · 左上' },
+  { en: '315 · Upper left', zh: '315 · 左上' },
+  { en: '337.5 · Upper left', zh: '337.5 · 左上' },
 ]
 
 export const directionToCell = (index: number) => ({

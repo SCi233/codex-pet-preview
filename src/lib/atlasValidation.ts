@@ -1,4 +1,5 @@
 import { CELL_HEIGHT, CELL_WIDTH, USED_COLUMNS_BY_ROW } from '../data/animations'
+import { translate, type Locale } from '../i18n'
 import type { Diagnostic, LoadedPet, ValidationResult } from '../types/pet'
 
 const makeDiagnostic = (
@@ -26,7 +27,10 @@ const scanCellAlpha = (
   return false
 }
 
-export const validatePet = async (pet: LoadedPet): Promise<ValidationResult> => {
+export const validatePet = async (
+  pet: LoadedPet,
+  locale: Locale = 'en',
+): Promise<ValidationResult> => {
   const diagnostics: Diagnostic[] = []
   const emptyUsedCells: Array<{ row: number; column: number }> = []
   const populatedUnusedCells: Array<{ row: number; column: number }> = []
@@ -36,10 +40,13 @@ export const validatePet = async (pet: LoadedPet): Promise<ValidationResult> => 
   diagnostics.push(
     makeDiagnostic(
       'dimensions',
-      '图集尺寸',
+      translate(locale, 'validation.dimensions'),
       dimensionsValid
         ? `${pet.width} × ${pet.height} · 8 × ${pet.rows} cells`
-        : `${pet.width} × ${pet.height}；应为 1536 × 1872 或 1536 × 2288`,
+        : translate(locale, 'validation.dimensionsInvalid', {
+            width: pet.width,
+            height: pet.height,
+          }),
       dimensionsValid ? 'pass' : 'error',
     ),
   )
@@ -49,10 +56,10 @@ export const validatePet = async (pet: LoadedPet): Promise<ValidationResult> => 
     diagnostics.push(
       makeDiagnostic(
         'version',
-        'Sprite contract',
+        translate(locale, 'validation.spriteContract'),
         declaredVersion === 2
-          ? 'v2 manifest 与 11 行图集匹配'
-          : '11 行图集必须在 pet.json 中声明 spriteVersionNumber: 2',
+          ? translate(locale, 'validation.v2Match')
+          : translate(locale, 'validation.v2DeclarationRequired'),
         declaredVersion === 2 ? 'pass' : 'error',
       ),
     )
@@ -60,10 +67,10 @@ export const validatePet = async (pet: LoadedPet): Promise<ValidationResult> => 
     diagnostics.push(
       makeDiagnostic(
         'version',
-        'Sprite contract',
+        translate(locale, 'validation.spriteContract'),
         declaredVersion === 2
-          ? 'manifest 声明 v2，但图集只有 9 行'
-          : '兼容旧版 9 行 atlas；look directions 不可用',
+          ? translate(locale, 'validation.v2TooShort')
+          : translate(locale, 'validation.legacyAtlas'),
         declaredVersion === 2 ? 'error' : 'warning',
       ),
     )
@@ -71,8 +78,8 @@ export const validatePet = async (pet: LoadedPet): Promise<ValidationResult> => 
     diagnostics.push(
       makeDiagnostic(
         'version',
-        'Sprite contract',
-        '无法从图集尺寸推断 Codex Pet 版本',
+        translate(locale, 'validation.spriteContract'),
+        translate(locale, 'validation.unknownVersion'),
         'error',
       ),
     )
@@ -81,9 +88,11 @@ export const validatePet = async (pet: LoadedPet): Promise<ValidationResult> => 
   diagnostics.push(
     makeDiagnostic(
       'manifest',
-      'Package manifest',
-      `${pet.manifest.id} · ${pet.manifest.displayName} · ${pet.manifestSource}`,
-      pet.manifestSource.startsWith('自动推断') ? 'warning' : 'pass',
+      translate(locale, 'validation.packageManifest'),
+      `${pet.manifest.id} · ${pet.manifest.displayName} · ${
+        pet.manifestSource ?? translate(locale, 'package.autoInferred')
+      }`,
+      pet.manifestSource ? 'pass' : 'warning',
     ),
   )
 
@@ -121,26 +130,41 @@ export const validatePet = async (pet: LoadedPet): Promise<ValidationResult> => 
     diagnostics.push(
       makeDiagnostic(
         'cells',
-        'Cell occupancy',
-        '浏览器无法读取像素；已跳过透明单元格检查',
+        translate(locale, 'validation.cellOccupancy'),
+        translate(locale, 'validation.pixelUnavailable'),
         'warning',
       ),
     )
   } else if (emptyUsedCells.length || populatedUnusedCells.length) {
     const parts = []
-    if (emptyUsedCells.length) parts.push(`${emptyUsedCells.length} 个必需 cell 为空`)
+    if (emptyUsedCells.length) {
+      parts.push(
+        translate(locale, 'validation.emptyRequired', {
+          count: emptyUsedCells.length,
+        }),
+      )
+    }
     if (populatedUnusedCells.length) {
-      parts.push(`${populatedUnusedCells.length} 个未使用 cell 不透明`)
+      parts.push(
+        translate(locale, 'validation.populatedUnused', {
+          count: populatedUnusedCells.length,
+        }),
+      )
     }
     diagnostics.push(
-      makeDiagnostic('cells', 'Cell occupancy', parts.join('；'), 'error'),
+      makeDiagnostic(
+        'cells',
+        translate(locale, 'validation.cellOccupancy'),
+        parts.join(locale === 'zh' ? '；' : '; '),
+        'error',
+      ),
     )
   } else {
     diagnostics.push(
       makeDiagnostic(
         'cells',
-        'Cell occupancy',
-        '所有必需 cell 非空，未使用 cell 保持透明',
+        translate(locale, 'validation.cellOccupancy'),
+        translate(locale, 'validation.cellsValid'),
         'pass',
       ),
     )

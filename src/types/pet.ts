@@ -10,7 +10,7 @@ export type PetManifest = {
 
 export type LoadedPet = {
   manifest: PetManifest
-  manifestSource: string
+  manifestSource: string | null
   spriteSource: string
   spriteFile: File
   spriteUrl: string
@@ -43,7 +43,6 @@ export type PointerLook = {
   y: number
   angle: number | null
   directionIndex: number | null
-  directionLabel: string
   radius: number
 }
 

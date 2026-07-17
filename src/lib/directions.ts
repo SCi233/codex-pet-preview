@@ -1,4 +1,3 @@
-import { LOOK_DIRECTIONS } from '../data/animations'
 import type { PointerLook } from '../types/pet'
 
 export const pointerToLook = (
@@ -18,7 +17,6 @@ export const pointerToLook = (
       y,
       angle: null,
       directionIndex: null,
-      directionLabel: 'Neutral · Idle',
       radius,
     }
   }
@@ -32,7 +30,6 @@ export const pointerToLook = (
     y,
     angle: normalized,
     directionIndex,
-    directionLabel: LOOK_DIRECTIONS[directionIndex],
     radius,
   }
 }

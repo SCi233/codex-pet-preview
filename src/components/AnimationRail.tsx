@@ -1,4 +1,5 @@
 import { ANIMATIONS } from '../data/animations'
+import { useI18n } from '../i18nContext'
 
 type AnimationRailProps = {
   selectedId: string
@@ -11,10 +12,12 @@ export function AnimationRail({
   disabled,
   onSelect,
 }: AnimationRailProps) {
+  const { locale, t } = useI18n()
+
   return (
-    <nav className="animation-rail" aria-label="动画列表">
+    <nav className="animation-rail" aria-label={t('animations.aria')}>
       <div className="rail-heading">
-        <span>Animations</span>
+        <span>{t('animations.heading')}</span>
         <span className="rail-count">09</span>
       </div>
       <div className="animation-list">
@@ -35,7 +38,7 @@ export function AnimationRail({
                 <Icon />
               </span>
               <span className="animation-copy">
-                <strong>{animation.shortLabel}</strong>
+                <strong>{animation.shortLabel[locale]}</strong>
                 <small>{animation.id}</small>
               </span>
               <kbd>{animation.shortcut}</kbd>

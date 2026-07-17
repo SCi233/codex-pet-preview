@@ -1,4 +1,5 @@
 import { unzipSync } from 'fflate'
+import { translate, type Locale } from '../i18n'
 import type { LoadedPet, PetManifest } from '../types/pet'
 
 type PackageFile = {
@@ -29,7 +30,7 @@ const mimeForPath = (path: string) => {
 
 const isSpriteImage = (path: string) => /\.(png|webp)$/i.test(path)
 
-const imageDimensions = async (file: File) => {
+const imageDimensions = async (file: File, locale: Locale) => {
   if ('createImageBitmap' in window) {
     const bitmap = await createImageBitmap(file)
     const dimensions = { width: bitmap.width, height: bitmap.height }
@@ -43,7 +44,7 @@ const imageDimensions = async (file: File) => {
       const image = new Image()
       image.onload = () =>
         resolve({ width: image.naturalWidth, height: image.naturalHeight })
-      image.onerror = () => reject(new Error('浏览器无法读取 spritesheet 图像。'))
+      image.onerror = () => reject(new Error(translate(locale, 'package.imageReadError')))
       image.src = url
     })
   } finally {
@@ -51,12 +52,15 @@ const imageDimensions = async (file: File) => {
   }
 }
 
-const filesFromZip = async (zipFile: File): Promise<PackageFile[]> => {
+const filesFromZip = async (
+  zipFile: File,
+  locale: Locale,
+): Promise<PackageFile[]> => {
   let entries: ReturnType<typeof unzipSync>
   try {
     entries = unzipSync(new Uint8Array(await zipFile.arrayBuffer()))
   } catch {
-    throw new Error('ZIP 解压失败，请确认文件没有加密且内容完整。')
+    throw new Error(translate(locale, 'package.zipError'))
   }
 
   return Object.entries(entries)
@@ -78,20 +82,20 @@ const packageFilesFromFiles = (files: File[]): PackageFile[] =>
     file,
   }))
 
-const validateManifestShape = (value: unknown): PetManifest => {
+const validateManifestShape = (value: unknown, locale: Locale): PetManifest => {
   if (!value || typeof value !== 'object') {
-    throw new Error('pet.json 不是有效的 JSON 对象。')
+    throw new Error(translate(locale, 'package.invalidObject'))
   }
 
   const candidate = value as Partial<PetManifest>
   if (!candidate.id || typeof candidate.id !== 'string') {
-    throw new Error('pet.json 缺少字符串字段 id。')
+    throw new Error(translate(locale, 'package.missingId'))
   }
   if (!candidate.displayName || typeof candidate.displayName !== 'string') {
-    throw new Error('pet.json 缺少字符串字段 displayName。')
+    throw new Error(translate(locale, 'package.missingDisplayName'))
   }
   if (!candidate.spritesheetPath || typeof candidate.spritesheetPath !== 'string') {
-    throw new Error('pet.json 缺少字符串字段 spritesheetPath。')
+    throw new Error(translate(locale, 'package.missingSpritesheetPath'))
   }
 
   return candidate as PetManifest
@@ -100,12 +104,15 @@ const validateManifestShape = (value: unknown): PetManifest => {
 export const loadPetPackage = async (
   inputFiles: File[],
   sourceKind: LoadedPet['packageKind'] = 'files',
+  locale: Locale = 'en',
 ): Promise<LoadedPet> => {
-  if (inputFiles.length === 0) throw new Error('没有收到任何文件。')
+  if (inputFiles.length === 0) {
+    throw new Error(translate(locale, 'package.noFiles'))
+  }
 
   const zip = inputFiles.find((file) => file.name.toLowerCase().endsWith('.zip'))
   const packageFiles = zip
-    ? await filesFromZip(zip)
+    ? await filesFromZip(zip, locale)
     : packageFilesFromFiles(inputFiles)
   const effectiveKind = zip ? 'zip' : sourceKind
 
@@ -115,16 +122,16 @@ export const loadPetPackage = async (
 
   let manifest: PetManifest
   let spriteEntry: PackageFile | undefined
-  let manifestSource = '自动推断（未提供 pet.json）'
+  let manifestSource: string | null = null
 
   if (manifestEntry) {
     let parsed: unknown
     try {
       parsed = JSON.parse(await manifestEntry.file.text())
     } catch {
-      throw new Error('pet.json 无法解析，请检查 JSON 语法。')
+      throw new Error(translate(locale, 'package.invalidJson'))
     }
-    manifest = validateManifestShape(parsed)
+    manifest = validateManifestShape(parsed, locale)
     manifestSource = manifestEntry.path
 
     const expectedPath = joinPath(dirname(manifestEntry.path), manifest.spritesheetPath)
@@ -139,22 +146,26 @@ export const loadPetPackage = async (
   } else {
     spriteEntry = packageFiles.find(({ path }) => isSpriteImage(path))
     if (!spriteEntry) {
-      throw new Error('包中没有找到 pet.json 或 PNG/WebP spritesheet。')
+      throw new Error(translate(locale, 'package.noManifestOrSprite'))
     }
     const fallbackId = spriteEntry.file.name.replace(/\.[^.]+$/, '') || 'local-pet'
     manifest = {
       id: fallbackId,
       displayName: fallbackId,
-      description: 'Raw atlas preview',
+      description: translate(locale, 'package.rawAtlasDescription'),
       spritesheetPath: spriteEntry.file.name,
     }
   }
 
   if (!spriteEntry || !isSpriteImage(spriteEntry.path)) {
-    throw new Error(`找不到 pet.json 指向的 spritesheet：${manifest.spritesheetPath}`)
+    throw new Error(
+      translate(locale, 'package.spriteNotFound', {
+        path: manifest.spritesheetPath,
+      }),
+    )
   }
 
-  const { width, height } = await imageDimensions(spriteEntry.file)
+  const { width, height } = await imageDimensions(spriteEntry.file, locale)
   const rows = height / 208
   const inferredVersion =
     width === 1536 && height === 2288

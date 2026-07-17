@@ -14,7 +14,8 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { AnimationDefinition } from '../data/animations'
-import { directionToCell } from '../data/animations'
+import { directionToCell, LOOK_DIRECTIONS } from '../data/animations'
+import { useI18n } from '../i18nContext'
 import { pointerToLook } from '../lib/directions'
 import type {
   LoadedPet,
@@ -61,7 +62,6 @@ const EMPTY_LOOK: PointerLook = {
   y: 0,
   angle: null,
   directionIndex: null,
-  directionLabel: 'Neutral · Idle',
   radius: 0,
 }
 
@@ -95,6 +95,7 @@ export function SpriteStage({
   onBackground,
   onChoosePackage,
 }: SpriteStageProps) {
+  const { locale, t } = useI18n()
   const stageRef = useRef<HTMLDivElement>(null)
   const [stageSize, setStageSize] = useState({ width: 720, height: 560 })
   const supportsLook = pet?.inferredVersion === 2
@@ -148,15 +149,23 @@ export function SpriteStage({
       : null
   const activeRow = lookCell?.row ?? animation.row
   const activeColumn = lookCell?.column ?? frame
+  const animationLabel = animation.label[locale]
+  const directionLabel =
+    pointer.directionIndex === null
+      ? t('stage.neutralIdle')
+      : LOOK_DIRECTIONS[pointer.directionIndex][locale]
   const activeLabel = lookCell
-    ? `Look direction ${pointer.directionLabel}`
-    : `${animation.label}, frame ${frame + 1}`
+    ? t('stage.lookDirection', { direction: directionLabel })
+    : t('stage.animationFrame', {
+        animation: animationLabel,
+        frame: frame + 1,
+      })
 
   return (
     <main className="preview-workspace">
       <div className="preview-header">
         <div>
-          <span className="eyebrow">LIVE PREVIEW</span>
+          <span className="eyebrow">{t('stage.livePreview')}</span>
           <h1>{pet ? pet.manifest.displayName : 'Codex Pet Preview'}</h1>
         </div>
         <div className="preview-statuses">
@@ -174,7 +183,9 @@ export function SpriteStage({
               className={`ready-badge ${validation.isValid ? 'is-ready' : 'has-issues'}`}
             >
               {validation.isValid ? <Check /> : <ScanLine />}
-              {validation.isValid ? 'Package ready' : 'Check package'}
+              {validation.isValid
+                ? t('stage.packageReady')
+                : t('stage.checkPackage')}
             </span>
           )}
         </div>
@@ -185,7 +196,7 @@ export function SpriteStage({
         className={`preview-stage bg-${background} ${
           lookMode ? 'is-look-mode' : ''
         }`}
-        aria-label="Pet 预览舞台"
+        aria-label={t('stage.aria')}
         onPointerMove={handlePointer}
         onPointerLeave={handlePointerLeave}
       >
@@ -199,11 +210,11 @@ export function SpriteStage({
               </div>
             </div>
             <div className="stage-empty-copy">
-              <span className="eyebrow">DROP TO BEGIN</span>
-              <h2>把你的 Pet 放上舞台</h2>
-              <p>所有文件只在当前浏览器标签内解析，不会上传。</p>
+              <span className="eyebrow">{t('stage.dropKicker')}</span>
+              <h2>{t('stage.emptyTitle')}</h2>
+              <p>{t('stage.emptyDescription')}</p>
               <button className="button primary" type="button" onClick={onChoosePackage}>
-                <PackageOpen /> 选择 Pet 包
+                <PackageOpen /> {t('stage.choosePackage')}
               </button>
             </div>
           </div>
@@ -250,13 +261,15 @@ export function SpriteStage({
               <div className="look-readout">
                 <MousePointer2 />
                 <span>
-                  <small>DIRECTION</small>
-                  <strong>{pointer.directionLabel}</strong>
+                  <small>{t('stage.direction')}</small>
+                  <strong>{directionLabel}</strong>
                 </span>
                 <span>
-                  <small>RAW ANGLE</small>
+                  <small>{t('stage.rawAngle')}</small>
                   <strong>
-                    {pointer.angle === null ? 'Deadzone' : `${pointer.angle.toFixed(1)}°`}
+                    {pointer.angle === null
+                      ? t('stage.deadzone')
+                      : `${pointer.angle.toFixed(1)}°`}
                   </strong>
                 </span>
               </div>
@@ -265,14 +278,14 @@ export function SpriteStage({
         )}
       </section>
 
-      <section className="control-deck" aria-label="预览控制">
+      <section className="control-deck" aria-label={t('stage.controls')}>
         <div className="transport-controls">
           <button
             type="button"
             className="control-button"
             onClick={onPrevious}
             disabled={!pet || lookMode}
-            aria-label="上一帧"
+            aria-label={t('stage.previousFrame')}
           >
             <ChevronLeft />
           </button>
@@ -281,7 +294,7 @@ export function SpriteStage({
             className="play-button"
             onClick={() => onPlaying(!playing)}
             disabled={!pet || lookMode}
-            aria-label={playing ? '暂停动画' : '播放动画'}
+            aria-label={playing ? t('stage.pause') : t('stage.play')}
           >
             {playing ? <Pause /> : <Play />}
           </button>
@@ -290,7 +303,7 @@ export function SpriteStage({
             className="control-button"
             onClick={onNext}
             disabled={!pet || lookMode}
-            aria-label="下一帧"
+            aria-label={t('stage.nextFrame')}
           >
             <ChevronRight />
           </button>
@@ -298,10 +311,14 @@ export function SpriteStage({
 
         <div className="frame-scrubber">
           <div className="scrubber-meta">
-            <span>{lookMode ? 'Pointer controlled' : animation.label}</span>
-            <strong>{lookMode ? pointer.directionLabel : `${frame + 1} / ${animation.frames}`}</strong>
+            <span>
+              {lookMode ? t('stage.pointerControlled') : animationLabel}
+            </span>
+            <strong>
+              {lookMode ? directionLabel : `${frame + 1} / ${animation.frames}`}
+            </strong>
           </div>
-          <div className="frame-dots" aria-label="帧选择">
+          <div className="frame-dots" aria-label={t('stage.framePicker')}>
             {Array.from({ length: animation.frames }, (_, index) => (
               <button
                 key={index}
@@ -309,7 +326,7 @@ export function SpriteStage({
                 className={frame === index ? 'is-active' : ''}
                 onClick={() => onFrame(index)}
                 disabled={!pet || lookMode}
-                aria-label={`第 ${index + 1} 帧`}
+                aria-label={t('stage.frame', { frame: index + 1 })}
               />
             ))}
           </div>
@@ -317,7 +334,7 @@ export function SpriteStage({
 
         <div className="quick-controls">
           <label className="speed-control">
-            <span>Speed</span>
+            <span>{t('stage.speed')}</span>
             <select
               value={speed}
               onChange={(event) => onSpeed(Number(event.target.value))}
@@ -338,14 +355,14 @@ export function SpriteStage({
             aria-pressed={loop}
             disabled={!pet || lookMode}
           >
-            <RotateCcw /> Loop
+            <RotateCcw /> {t('stage.loop')}
           </button>
         </div>
       </section>
 
-      <section className="settings-strip" aria-label="舞台设置">
+      <section className="settings-strip" aria-label={t('stage.settings')}>
         <div className="setting-group scale-setting">
-          <span className="setting-label">Scale</span>
+          <span className="setting-label">{t('stage.scale')}</span>
           <input
             type="range"
             min="0.5"
@@ -354,13 +371,13 @@ export function SpriteStage({
             value={scale}
             onChange={(event) => onScale(Number(event.target.value))}
             disabled={!pet}
-            aria-label="Pet 缩放"
+            aria-label={t('stage.petScale')}
           />
           <output>{scale.toFixed(1)}×</output>
         </div>
 
         <div className="setting-group background-setting">
-          <span className="setting-label">Stage</span>
+          <span className="setting-label">{t('stage.stage')}</span>
           {(['grid', 'dark', 'light', 'chroma'] as StageBackground[]).map((value) => (
             <button
               key={value}
@@ -369,7 +386,7 @@ export function SpriteStage({
                 background === value ? 'is-active' : ''
               }`}
               onClick={() => onBackground(value)}
-              aria-label={`舞台背景 ${value}`}
+              aria-label={t('stage.background', { background: value })}
               aria-pressed={background === value}
             />
           ))}
@@ -383,7 +400,7 @@ export function SpriteStage({
             aria-pressed={pixelated}
             disabled={!pet}
           >
-            <Grid2X2 /> Pixel
+            <Grid2X2 /> {t('stage.pixel')}
           </button>
           <button
             type="button"
@@ -392,7 +409,7 @@ export function SpriteStage({
             aria-pressed={guides}
             disabled={!pet}
           >
-            <Crosshair /> Guides
+            <Crosshair /> {t('stage.guides')}
           </button>
           <button
             type="button"
@@ -400,15 +417,19 @@ export function SpriteStage({
             onClick={() => onLookMode(!lookMode)}
             aria-pressed={lookMode}
             disabled={!pet || !supportsLook}
-            title={supportsLook ? '用光标调试 16 个 look directions' : '仅 v2 Pet 支持'}
+            title={
+              supportsLook
+                ? t('stage.lookSupported')
+                : t('stage.lookUnsupported')
+            }
           >
-            <Eye /> Look
+            <Eye /> {t('stage.look')}
           </button>
         </div>
 
         {lookMode && supportsLook && (
           <div className="setting-group deadzone-setting">
-            <span className="setting-label">Deadzone</span>
+            <span className="setting-label">{t('stage.deadzone')}</span>
             <input
               type="range"
               min="12"
@@ -416,7 +437,7 @@ export function SpriteStage({
               step="2"
               value={deadzone}
               onChange={(event) => onDeadzone(Number(event.target.value))}
-              aria-label="Look deadzone"
+              aria-label={t('stage.lookDeadzone')}
             />
             <output>{deadzone}px</output>
           </div>
