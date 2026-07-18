@@ -18,6 +18,12 @@ A local-first previewer for Codex Pet packages. It runs entirely in your browser
   <img src="docs/screenshots/app-responsive-en.png" alt="Responsive English interface" width="520" />
 </p>
 
+### Playground
+
+<p align="center">
+  <img src="docs/screenshots/playground-en.png" alt="Interactive Playground with a loaded Codex Pet and atlas inspector" width="960" />
+</p>
+
 ## Features
 
 - Load a Pet folder, ZIP, `pet.json` plus spritesheet, or a standalone PNG / WebP atlas
@@ -28,8 +34,36 @@ A local-first previewer for Codex Pet packages. It runs entirely in your browser
 - Inspect the full atlas with a 192×208 cell grid
 - Diagnose dimensions, version declarations, required cells, and transparency in unused cells directly in the browser
 - Preview against dark, light, checkerboard, and chroma backgrounds with centerline and baseline guides
+- Use the interactive Playground to hover-jump, drag-run, resize, and trigger every Pet animation with UI controls or number keys
+- Play every animation in order and export the canvas as a browser-recorded video or an encoded GIF, including transparent WebM/GIF output and automatic download when encoding finishes
+- Select from 24 presets or enter HEX/RGB backgrounds in a compact color popover, use a transparent grid, or crop a local PNG, JPEG, or WebP image
+- Resize the canvas with common aspect-ratio presets or custom dimensions; presets preserve the current height and adjust the width
+- Start at Codex's 112 px Pet width and retain crisp small-scale previews with a high-DPI canvas
 - Switch the full interface between light and dark themes, or automatically follow the operating system
 - Switch the complete interface between English and Simplified Chinese
+
+## Playground
+
+Open **Playground** after loading a Pet package to test the character in a canvas that behaves like the Codex Pet runtime.
+
+### Interact with the Pet
+
+- Hover over the Pet to trigger Jump, then drag it left or right to trigger the matching Run animation. Releasing the pointer returns it directly to Idle.
+- Trigger all nine animations with the on-screen buttons or the `1`–`9` keys, including animations that do not have a pointer gesture.
+- Resize the Pet from `0.5×` to `4×`. The initial and reset size matches Codex's default 112 px rendering width, while the high-DPI canvas keeps smaller previews crisp.
+- Use **Reset position and size** to return the Pet to its default placement and scale.
+
+### Build the scene
+
+- Choose `16:9`, `4:3`, `3:2`, `1:1`, or `9:16`, or enter a custom canvas size. Ratio presets keep the current height and adjust the width.
+- Pick from 24 background presets, enter a HEX value, edit the R/G/B channels, or select the transparent checkerboard option.
+- Add a local PNG, JPEG, or WebP background and adjust its zoom and focal position with the crop controls.
+
+### Play and export
+
+- **Play all** presents every animation in sequence without placing progress overlays over the canvas.
+- **Export video** records the complete sequence with `MediaRecorder`; **Export GIF** encodes it in the browser. The finished file downloads automatically.
+- Transparent backgrounds remain transparent in GIF output and in alpha-capable WebM recording. Video codec support depends on the browser.
 
 ## Getting started
 

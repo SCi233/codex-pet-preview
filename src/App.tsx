@@ -1,10 +1,12 @@
 import {
   Box,
   ChevronDown,
+  Gamepad2,
   Github,
   Keyboard,
   Languages,
   Moon,
+  PanelsTopLeft,
   Sparkles,
   Sun,
   UploadCloud,
@@ -14,6 +16,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimationRail } from './components/AnimationRail'
 import { InspectorPanel } from './components/InspectorPanel'
 import { PackageLoader } from './components/PackageLoader'
+import { Playground } from './components/Playground'
 import { SpriteStage } from './components/SpriteStage'
 import { ANIMATIONS } from './data/animations'
 import { useAnimationPlayer } from './hooks/useAnimationPlayer'
@@ -58,6 +61,8 @@ function App() {
   const [inspectorTab, setInspectorTab] = useState<'package' | 'atlas'>('package')
   const [showAtlasGrid, setShowAtlasGrid] = useState(true)
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [workspaceMode, setWorkspaceMode] =
+    useState<'preview' | 'playground'>('preview')
   const inputRef = useRef<HTMLInputElement>(null)
   const currentUrlRef = useRef<string | null>(null)
   const dragDepth = useRef(0)
@@ -155,6 +160,7 @@ function App() {
 
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
+      if (workspaceMode !== 'preview') return
       const target = event.target as HTMLElement | null
       if (target?.matches('input, select, textarea, [contenteditable="true"]')) return
 
@@ -184,6 +190,7 @@ function App() {
     previous,
     setPlaying,
     setLookModeSafely,
+    workspaceMode,
   ])
 
   const handleDragEnter = (event: React.DragEvent) => {
@@ -245,6 +252,32 @@ function App() {
           {t('app.privacy')}
         </div>
         <div className="header-actions">
+          <button
+            type="button"
+            className="header-button workspace-toggle"
+            onClick={() =>
+              setWorkspaceMode((current) =>
+                current === 'preview' ? 'playground' : 'preview',
+              )
+            }
+            aria-label={
+              workspaceMode === 'preview'
+                ? t('app.openPlayground')
+                : t('app.openPreview')
+            }
+            title={
+              workspaceMode === 'preview'
+                ? t('app.openPlayground')
+                : t('app.openPreview')
+            }
+          >
+            {workspaceMode === 'preview' ? <Gamepad2 /> : <PanelsTopLeft />}
+            <span>
+              {workspaceMode === 'preview'
+                ? t('app.playground')
+                : t('app.preview')}
+            </span>
+          </button>
           <button
             type="button"
             className="header-button"
@@ -320,50 +353,64 @@ function App() {
         </div>
       )}
 
-      <div className="app-layout">
+      <div
+        className={`app-layout ${
+          workspaceMode === 'playground' ? 'is-playground' : ''
+        }`}
+      >
         <aside className="left-sidebar">
           <PackageLoader pet={pet} loading={loading} onFiles={openPet} />
-          <AnimationRail
-            selectedId={animation.id}
-            disabled={!pet}
-            onSelect={(id) => {
-              setLookModeSafely(false)
-              setSelectedAnimationId(id)
-              setPlaying(true)
-            }}
-          />
+          {workspaceMode === 'preview' && (
+            <AnimationRail
+              selectedId={animation.id}
+              disabled={!pet}
+              onSelect={(id) => {
+                setLookModeSafely(false)
+                setSelectedAnimationId(id)
+                setPlaying(true)
+              }}
+            />
+          )}
         </aside>
 
-        <SpriteStage
-          pet={pet}
-          validation={validation}
-          animation={animation}
-          frame={frame}
-          playing={playing}
-          speed={speed}
-          loop={loop}
-          scale={scale}
-          pixelated={pixelated}
-          guides={guides}
-          lookMode={lookMode}
-          deadzone={deadzone}
-          background={background}
-          pointer={pointer}
-          onPointer={setPointer}
-          onPlaying={setPlaying}
-          onPrevious={previous}
-          onNext={next}
-          onFrame={setFrame}
-          onSpeed={setSpeed}
-          onLoop={setLoop}
-          onScale={setScale}
-          onPixelated={setPixelated}
-          onGuides={setGuides}
-          onLookMode={setLookModeSafely}
-          onDeadzone={setDeadzone}
-          onBackground={setBackground}
-          onChoosePackage={choosePackage}
-        />
+        {workspaceMode === 'preview' ? (
+          <SpriteStage
+            pet={pet}
+            validation={validation}
+            animation={animation}
+            frame={frame}
+            playing={playing}
+            speed={speed}
+            loop={loop}
+            scale={scale}
+            pixelated={pixelated}
+            guides={guides}
+            lookMode={lookMode}
+            deadzone={deadzone}
+            background={background}
+            pointer={pointer}
+            onPointer={setPointer}
+            onPlaying={setPlaying}
+            onPrevious={previous}
+            onNext={next}
+            onFrame={setFrame}
+            onSpeed={setSpeed}
+            onLoop={setLoop}
+            onScale={setScale}
+            onPixelated={setPixelated}
+            onGuides={setGuides}
+            onLookMode={setLookModeSafely}
+            onDeadzone={setDeadzone}
+            onBackground={setBackground}
+            onChoosePackage={choosePackage}
+          />
+        ) : (
+          <Playground
+            pet={pet}
+            onChoosePackage={choosePackage}
+            onError={setError}
+          />
+        )}
 
         <InspectorPanel
           pet={pet}
