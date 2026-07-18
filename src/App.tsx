@@ -267,7 +267,7 @@ function App() {
           </button>
           <a
             className="header-button"
-            href="https://github.com/openai/codex"
+            href="https://github.com/SCi233/codex-pet-preview"
             target="_blank"
             rel="noreferrer"
             aria-label="GitHub"
