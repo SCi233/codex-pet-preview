@@ -18,6 +18,11 @@ const en = {
   'app.loadFailed': 'Could not load Pet',
   'app.unknownLoadError': 'Could not open this Pet package.',
 
+  'theme.label': 'Theme',
+  'theme.system': 'System',
+  'theme.dark': 'Dark',
+  'theme.light': 'Light',
+
   'loader.aria': 'Load Pet package',
   'loader.kicker': 'LOCAL PACKAGE',
   'loader.replace': 'Replace Pet',
@@ -136,6 +141,11 @@ const zh: Record<TranslationKey, string> = {
   'app.dropTitle': '松手载入 Pet',
   'app.loadFailed': '载入失败',
   'app.unknownLoadError': '无法打开这个 Pet 包。',
+
+  'theme.label': '主题',
+  'theme.system': '跟随系统',
+  'theme.dark': '深色',
+  'theme.light': '浅色',
 
   'loader.aria': '加载 Pet 包',
   'loader.kicker': '本地包',

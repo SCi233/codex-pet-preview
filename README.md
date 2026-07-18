@@ -28,6 +28,7 @@ A local-first previewer for Codex Pet packages. It runs entirely in your browser
 - Inspect the full atlas with a 192×208 cell grid
 - Diagnose dimensions, version declarations, required cells, and transparency in unused cells directly in the browser
 - Preview against dark, light, checkerboard, and chroma backgrounds with centerline and baseline guides
+- Switch the full interface between light and dark themes, or automatically follow the operating system
 - Switch the complete interface between English and Simplified Chinese
 
 ## Getting started

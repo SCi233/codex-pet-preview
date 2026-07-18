@@ -1,9 +1,12 @@
 import {
   Box,
+  ChevronDown,
   Github,
   Keyboard,
   Languages,
+  Moon,
   Sparkles,
+  Sun,
   UploadCloud,
   X,
 } from 'lucide-react'
@@ -17,6 +20,7 @@ import { useAnimationPlayer } from './hooks/useAnimationPlayer'
 import { useI18n } from './i18nContext'
 import { validatePet } from './lib/atlasValidation'
 import { filesFromDataTransfer, loadPetPackage } from './lib/petPackage'
+import { useTheme, type ThemePreference } from './themeContext'
 import type {
   LoadedPet,
   PointerLook,
@@ -34,6 +38,7 @@ const INITIAL_POINTER: PointerLook = {
 
 function App() {
   const { locale, setLocale, t } = useI18n()
+  const { preference, resolvedTheme, setPreference } = useTheme()
   const [pet, setPet] = useState<LoadedPet | null>(null)
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [validating, setValidating] = useState(false)
@@ -248,6 +253,22 @@ function App() {
           >
             <Keyboard /> <span>{t('app.shortcuts')}</span>
           </button>
+          <label className="theme-control" title={t('theme.label')}>
+            {resolvedTheme === 'dark' ? <Moon /> : <Sun />}
+            <span className="sr-only">{t('theme.label')}</span>
+            <select
+              value={preference}
+              aria-label={t('theme.label')}
+              onChange={(event) =>
+                setPreference(event.target.value as ThemePreference)
+              }
+            >
+              <option value="system">{t('theme.system')}</option>
+              <option value="dark">{t('theme.dark')}</option>
+              <option value="light">{t('theme.light')}</option>
+            </select>
+            <ChevronDown className="theme-chevron" />
+          </label>
           <button
             type="button"
             className="header-button language-toggle"
